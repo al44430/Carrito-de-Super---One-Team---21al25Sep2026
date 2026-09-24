@@ -7,4 +7,8 @@
     <RootNamespace>Carrito_de_Super___One_Team___21al25Sep2026</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\images\" />
+  </ItemGroup>
+
 </Project>
