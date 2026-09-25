@@ -3,8 +3,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-// 1. AGREGA ESTA LÍNEA (Normalmente abajo de builder.Services.AddRazorPages())
-// Registra el servicio de sesiones en el contenedor de dependencias
+// Registra el servicio de sesiones en el contenedor de dependencias - abajo de builder.Services.AddRazorPages()
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(20); // Tiempo de expiración del carrito
@@ -30,8 +29,7 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-// 2. AGREGA ESTA LÍNEA (¡MUY IMPORTANTE EL ORDEN!)
-// Debe ir obligatoriamente DESPUÉS de UseRouting y ANTES de MapRazorPages
+// Despues de UseRouting y Antes de MapRazorPages
 app.UseSession();
 
 app.MapStaticAssets();
