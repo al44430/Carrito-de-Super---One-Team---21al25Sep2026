@@ -14,7 +14,7 @@ namespace Carrito_de_Super___One_Team___21al25Sep2026.Pages
         public string Sku { get; set; } = string.Empty;
         public string Nombre { get; set; } = string.Empty;
         public decimal Precio { get; set; }
-        public string ImagenUrl { get; set; } = string.Empty; // Ruta o placeholder de la imagen
+        public string ImagenUrl { get; set; } = string.Empty; 
     }
 
     // Representa un elemento dentro del carrito de compras
@@ -30,6 +30,8 @@ namespace Carrito_de_Super___One_Team___21al25Sep2026.Pages
     // ==========================================
     public class ConfiguracionEstilo
     {
+        public string TituloTienda { get; set; } = "OneTeam Express";
+        public string SloganTienda { get; set; } = "Precios siempre bajos";
         public string ColorPrimario { get; set; } = "#1E3A8A";   // Azul oscuro del encabezado
         public string ColorBotones { get; set; } = "#0EA5E9";    // Azul brillante de los botones
         public string ColorTextoBotones { get; set; } = "#FFFFFF";
@@ -61,6 +63,7 @@ namespace Carrito_de_Super___One_Team___21al25Sep2026.Pages
             CargarCarritoDesdeSesion();
         }
 
+        // AGREGAR PRODUCTO DESDE EL PANEL IZQUIERDO
         public IActionResult OnPostAgregarAlCarrito(string sku)
         {
             CargarConfiguracion(); // Recarga el catálogo necesario para buscar el producto
@@ -83,12 +86,62 @@ namespace Carrito_de_Super___One_Team___21al25Sep2026.Pages
                 }
 
                 // Guarda el estado actualizado en la sesión en formato JSON
-                HttpContext.Session.SetString(SessionKeyCarrito, JsonSerializer.Serialize(Carrito));
+                // HttpContext.Session.SetString(SessionKeyCarrito, JsonSerializer.Serialize(Carrito));
+                GuardarCarritoEnSesion();
             }
 
             // Redirige a la misma página (OnGet) para evitar reenvíos de formulario duplicados
             return RedirectToPage();
         }
+
+        // BOTÓN "+" PARA INCREMENTAR DE UNO EN UNO
+        public IActionResult OnPostIncrementar(string sku)
+        {
+            CargarCarritoDesdeSesion();
+            var item = Carrito.FirstOrDefault(i => i.Producto.Sku == sku);
+            if (item != null)
+            {
+                item.Cantidad++;
+                GuardarCarritoEnSesion();
+            }
+            return RedirectToPage();
+        }
+
+        // BOTÓN "-" PARA RESTAR DE UNO EN UNO
+        public IActionResult OnPostDecrementar(string sku)
+        {
+            CargarCarritoDesdeSesion();
+            var item = Carrito.FirstOrDefault(i => i.Producto.Sku == sku);
+            if (item != null)
+            {
+                item.Cantidad--;
+                // Si la cantidad llega a 0, eliminamos el renglón automáticamente
+                if (item.Cantidad <= 0)
+                {
+                    Carrito.Remove(item);
+                }
+                GuardarCarritoEnSesion();
+            }
+            return RedirectToPage();
+        }
+
+        // BOTÓN "ELIMINAR" PARA BORRAR TODO EL RENGLÓN
+        public IActionResult OnPostEliminar(string sku)
+        {
+            CargarCarritoDesdeSesion();
+            var item = Carrito.FirstOrDefault(i => i.Producto.Sku == sku);
+            if (item != null)
+            {
+                Carrito.Remove(item);
+                GuardarCarritoEnSesion();
+            }
+            return RedirectToPage();
+        }
+
+
+
+
+
 
         // ==========================================
         // MÉTODOS DE CONTROL INTERNO (CÓDIGO DURO)
@@ -99,10 +152,12 @@ namespace Carrito_de_Super___One_Team___21al25Sep2026.Pages
             // Definición de estilos visuales modificables rápidamente
             Estilos = new ConfiguracionEstilo
             {
-                ColorPrimario = "#2C3E50",     // Cambia este color para cambiar el Header
-                ColorBotones = "#007BFF",      // Cambia este color para los botones "Añadir al Carrito"
+                TituloTienda = "OneTeam Express",
+                SloganTienda = "Precios siempre bajos",
+                ColorPrimario = "#223d5b",     // Azul marino oscuro idéntico a la imagen
+                ColorBotones = "#007bff",      // Azul brillante para añadir al carrito
                 ColorTextoBotones = "#FFFFFF",
-                ColorFondo = "#F4F6F7",
+                ColorFondo = "#f4f6f9",
                 ColorTarjeta = "#FFFFFF",
                 FuenteFamilia = "Arial, sans-serif"
             };
@@ -123,15 +178,14 @@ namespace Carrito_de_Super___One_Team___21al25Sep2026.Pages
         private void CargarCarritoDesdeSesion()
         {
             var carritoJson = HttpContext.Session.GetString(SessionKeyCarrito);
-            if (!string.IsNullOrEmpty(carritoJson))
-            {
-                // Deserializa el JSON guardado de vuelta a objetos en memoria
-                Carrito = JsonSerializer.Deserialize<List<ItemCarrito>>(carritoJson) ?? new List<ItemCarrito>();
-            }
-            else
-            {
-                Carrito = new List<ItemCarrito>();
-            }
+            Carrito = !string.IsNullOrEmpty(carritoJson)
+                ? JsonSerializer.Deserialize<List<ItemCarrito>>(carritoJson) ?? new List<ItemCarrito>()
+                : new List<ItemCarrito>();
+        }
+
+        private void GuardarCarritoEnSesion()
+        {
+            HttpContext.Session.SetString(SessionKeyCarrito, JsonSerializer.Serialize(Carrito));
         }
     }
 }
